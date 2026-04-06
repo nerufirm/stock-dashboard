@@ -29,7 +29,7 @@ _METRICS: list[dict[str, str]] = [
     {
         "label": "配当利回り",
         "key": "dividendYield",
-        "format": "percent",
+        "format": "percent_raw",
         "description": (
             "株価に対する年間配当金の割合。"
             "高いほどインカムゲインが大きい。日本株の平均は約2%前後。"
@@ -115,6 +115,8 @@ def _format_value(value: float | int | None, fmt: str, suffix: str) -> str:
     if value is None:
         return "-"
 
+    if fmt == "percent_raw":
+        return f"{value:.2f}%"
     if fmt == "percent":
         return f"{value * 100:.2f}%"
     if fmt == "oku":

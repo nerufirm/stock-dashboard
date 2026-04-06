@@ -128,6 +128,26 @@ def get_raw_ticker_info(code: str) -> dict | None:
         return None
 
 
+def get_stock_name(code: str) -> str:
+    """銘柄コードから銘柄名を取得する.
+
+    Args:
+        code: 銘柄コード（例: "7203"）
+
+    Returns:
+        銘柄名。取得失敗時は銘柄コードをそのまま返す。
+    """
+    try:
+        symbol = _to_ticker_symbol(code)
+        ticker = yf.Ticker(symbol)
+        info = ticker.info
+        if info is not None:
+            return info.get("longName") or info.get("shortName", code)
+    except Exception:
+        logger.warning("銘柄 %s の名前取得に失敗しました", code)
+    return code
+
+
 def get_multiple_stocks(
     codes: list[str], period: str = "1y"
 ) -> dict[str, pd.DataFrame]:

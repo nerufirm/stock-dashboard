@@ -5,7 +5,7 @@
 
 import streamlit as st
 
-from utils.data import validate_stock_code
+from utils.data import get_stock_name, validate_stock_code
 from utils.favorites import add_favorite, get_favorites, init_favorites, remove_favorite
 
 _NOTO_SANS_JP_CSS = """
@@ -75,12 +75,21 @@ def render_sidebar() -> dict:
         if not favorites:
             st.info("お気に入り銘柄がありません。上から追加してください。")
         else:
+            # 銘柄名をキャッシュして毎回API呼び出しを避ける
+            if "stock_names_cache" not in st.session_state:
+                st.session_state["stock_names_cache"] = {}
+            names_cache: dict[str, str] = st.session_state["stock_names_cache"]
+
             selected_codes = []
             for code in favorites:
+                if code not in names_cache:
+                    names_cache[code] = get_stock_name(code)
+                display_label = f"{code} - {names_cache[code]}"
+
                 col_check, col_del = st.columns([3, 1])
                 with col_check:
                     is_selected = st.checkbox(
-                        code,
+                        display_label,
                         value=True,
                         key=f"fav_check_{code}",
                     )
@@ -91,6 +100,7 @@ def render_sidebar() -> dict:
                         "削除",
                         key=f"fav_del_{code}",
                     ):
+                        names_cache.pop(code, None)
                         remove_favorite(code)
                         st.rerun()
 
